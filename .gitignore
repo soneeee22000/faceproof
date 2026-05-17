@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.env.local
+
+# Model weights — downloaded via scripts, never committed
+models/*.pth
+models/*.pt
+models/*.onnx
+models/weights/
+
+# Datasets — never committed (licensing: see data/README.md)
+data/lfw/
+data/celeba_spoof/
+data/**/*.jpg
+data/**/*.png
+data/**/*.zip
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
