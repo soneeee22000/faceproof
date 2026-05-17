@@ -25,27 +25,60 @@ from faceproof.errors import NoFaceDetectedError
 from faceproof.matching import cosine_similarity
 
 _RESULTS_DIR = Path(__file__).resolve().parent / "results"
-_PROGRESS_EVERY = 200
+_CHECKPOINT_PATH = _RESULTS_DIR / "lfw_checkpoint.npz"
+_CHECKPOINT_EVERY = 500
+
+
+def _load_checkpoint() -> tuple[list[float], list[int], int, int]:
+    """Return ``(similarities, labels, next_index, skipped)`` from a prior run."""
+    if not _CHECKPOINT_PATH.exists():
+        return [], [], 0, 0
+    saved = np.load(_CHECKPOINT_PATH)
+    return (
+        [float(value) for value in saved["similarities"]],
+        [int(value) for value in saved["labels"]],
+        int(saved["next_index"]),
+        int(saved["skipped"]),
+    )
+
+
+def _save_checkpoint(
+    similarities: list[float], labels: list[int], next_index: int, skipped: int
+) -> None:
+    """Persist scoring progress so an interrupted run can resume."""
+    _RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    np.savez(
+        _CHECKPOINT_PATH,
+        similarities=np.asarray(similarities, dtype=np.float64),
+        labels=np.asarray(labels, dtype=np.int64),
+        next_index=next_index,
+        skipped=skipped,
+    )
 
 
 def _score_pairs(
     pairs: LFWPairs,
 ) -> tuple[NDArray[np.float64], NDArray[np.int64], int]:
-    """Score every pair by cosine similarity; count pairs with no detectable face."""
-    similarities: list[float] = []
-    labels: list[int] = []
-    skipped = 0
+    """Score every pair by cosine similarity; count pairs with no detectable face.
+
+    Progress is checkpointed every ``_CHECKPOINT_EVERY`` pairs, so an interrupted
+    run resumes from the last checkpoint instead of starting over.
+    """
+    similarities, labels, start_index, skipped = _load_checkpoint()
     total = len(pairs)
-    for index in range(total):
+    if start_index:
+        print(f"  resuming from checkpoint at pair {start_index}/{total}", flush=True)
+    for index in range(start_index, total):
         try:
             embedding_a = embed_image(pairs.images_a[index])
             embedding_b = embed_image(pairs.images_b[index])
         except NoFaceDetectedError:
             skipped += 1
-            continue
-        similarities.append(cosine_similarity(embedding_a, embedding_b))
-        labels.append(int(pairs.labels[index]))
-        if (index + 1) % _PROGRESS_EVERY == 0:
+        else:
+            similarities.append(cosine_similarity(embedding_a, embedding_b))
+            labels.append(int(pairs.labels[index]))
+        if (index + 1) % _CHECKPOINT_EVERY == 0:
+            _save_checkpoint(similarities, labels, index + 1, skipped)
             print(f"  scored {index + 1}/{total} pairs ({skipped} skipped)", flush=True)
     return (
         np.asarray(similarities, dtype=np.float64),
@@ -150,6 +183,7 @@ def main() -> None:
     _write_report(
         result, args.subset, skipped, elapsed_seconds, _RESULTS_DIR / "lfw_report.md"
     )
+    _CHECKPOINT_PATH.unlink(missing_ok=True)
 
     print(
         f"\nDone. AUC={result.auc:.4f} EER={result.eer:.4f} "

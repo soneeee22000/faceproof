@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from numpy.typing import NDArray
 
+from faceproof.config import settings
 from faceproof.errors import NoFaceDetectedError
 
 if TYPE_CHECKING:
@@ -31,8 +32,6 @@ ALIGNED_FACE_SIZE = 112
 
 _MODEL_PACK = "buffalo_l"
 _DETECTION_SIZE = (640, 640)
-_CPU_CTX_ID = -1
-_CPU_PROVIDERS = ["CPUExecutionProvider"]
 
 
 @dataclass(frozen=True)
@@ -58,9 +57,9 @@ def _detector() -> FaceAnalysis:
     detector = FaceAnalysis(
         name=_MODEL_PACK,
         allowed_modules=["detection"],
-        providers=_CPU_PROVIDERS,
+        providers=settings.onnx_provider_list,
     )
-    detector.prepare(ctx_id=_CPU_CTX_ID, det_size=_DETECTION_SIZE)
+    detector.prepare(ctx_id=settings.onnx_ctx_id, det_size=_DETECTION_SIZE)
     return detector
 
 

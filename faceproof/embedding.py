@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from numpy.typing import NDArray
 
+from faceproof.config import settings
 from faceproof.detection import align_face, detect_primary_face
 
 if TYPE_CHECKING:
@@ -30,8 +31,6 @@ EMBEDDING_DIM = 512
 _MODEL_PACK = "buffalo_l"
 _RECOGNITION_MODEL = "w600k_r50.onnx"
 _INSIGHTFACE_ROOT = "~/.insightface"
-_CPU_CTX_ID = -1
-_CPU_PROVIDERS = ["CPUExecutionProvider"]
 
 
 @lru_cache(maxsize=1)
@@ -47,9 +46,10 @@ def _recognizer() -> ArcFaceONNX:
 
     model_dir = ensure_available("models", _MODEL_PACK, root=_INSIGHTFACE_ROOT)
     recognizer = get_model(
-        os.path.join(model_dir, _RECOGNITION_MODEL), providers=_CPU_PROVIDERS
+        os.path.join(model_dir, _RECOGNITION_MODEL),
+        providers=settings.onnx_provider_list,
     )
-    recognizer.prepare(ctx_id=_CPU_CTX_ID)
+    recognizer.prepare(ctx_id=settings.onnx_ctx_id)
     return recognizer
 
 

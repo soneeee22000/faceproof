@@ -13,6 +13,24 @@ class Settings(BaseSettings):
     service_name: str = "faceproof"
     cors_origins: str = "http://localhost:5173"
     max_upload_bytes: int = 8 * 1024 * 1024
+    onnx_providers: str = "CPUExecutionProvider"
+
+    @property
+    def onnx_provider_list(self) -> list[str]:
+        """ONNX Runtime execution providers, highest priority first.
+
+        Defaults to CPU (the Cloud Run deployment target). Set
+        ``FACEPROOF_ONNX_PROVIDERS=CUDAExecutionProvider,CPUExecutionProvider``
+        to run on a GPU, e.g. for the LFW evaluation on Colab.
+        """
+        return [name.strip() for name in self.onnx_providers.split(",") if name.strip()]
+
+    @property
+    def onnx_ctx_id(self) -> int:
+        """InsightFace device id: 0 when a CUDA provider is configured, else -1 (CPU)."""
+        if any("CUDA" in name for name in self.onnx_provider_list):
+            return 0
+        return -1
 
 
 settings = Settings()
