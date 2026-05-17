@@ -174,12 +174,12 @@ faceproof/
 
 ## Roadmap
 
-| Phase | Scope                                                                | Status      |
-| ----- | -------------------------------------------------------------------- | ----------- |
-| 1     | Face verification — detection, embedding, matching, LFW calibration  | Complete    |
-| 2     | Liveness / anti-spoofing — CelebA-Spoof CNN vs. Silent-Face baseline | In progress |
-| 3     | Service & UI — FastAPI pipeline + React upload/result UI             | Planned     |
-| 4     | Deploy — Docker image to GCP Cloud Run                               | Planned     |
+| Phase | Scope                                                                | Status   |
+| ----- | -------------------------------------------------------------------- | -------- |
+| 1     | Face verification — detection, embedding, matching, LFW calibration  | Complete |
+| 2     | Liveness / anti-spoofing — CelebA-Spoof CNN vs. Silent-Face baseline | Complete |
+| 3     | Service & UI — FastAPI pipeline + React upload/result UI             | Next     |
+| 4     | Deploy — Docker image to GCP Cloud Run                               | Planned  |
 
 <!-- TODO: Add demo GIF once the Phase 3 UI ships -->
 
