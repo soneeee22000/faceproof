@@ -30,6 +30,12 @@ data/**/*.jpg
 data/**/*.png
 data/**/*.zip
 
+# Local agent / editor config — not part of the published project
+CLAUDE.md
+
+# Evaluation — transient scoring checkpoint (final results are committed, not this)
+evaluation/results/lfw_checkpoint.npz
+
 # Frontend
 frontend/node_modules/
 frontend/dist/

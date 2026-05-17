@@ -1,7 +1,7 @@
 """Domain errors for the FaceProof verification pipeline.
 
-These are raised by the pipeline modules and mapped to API error codes
-(see ``CLAUDE.md`` API Response Pattern) by the FastAPI layer.
+These are raised by the pipeline modules and mapped by the FastAPI layer to a
+structured error response: ``{"data": null, "error": {"code", "message"}}``.
 """
 
 

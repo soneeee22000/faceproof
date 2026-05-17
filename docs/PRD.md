@@ -6,9 +6,8 @@
 > **Last Updated:** 2026-05-17
 
 > **Intended Scope:** FaceProof is an **open-source portfolio / reference-implementation piece**,
-> non-commercial. Per `/start-project` Phase −1, the `/moat-check` defensibility gate is skipped
-> for explicitly-labelled portfolio work. No moat, market, or commercial claims appear in this
-> PRD or in any project artifact.
+> non-commercial. It makes no moat, market, or commercial claims — none appear in this PRD or in
+> any project artifact.
 
 ---
 
