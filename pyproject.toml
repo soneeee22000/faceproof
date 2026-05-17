@@ -50,3 +50,7 @@ testpaths = ["tests"]
 [tool.mypy]
 python_version = "3.10"
 strict = true
+
+[[tool.mypy.overrides]]
+module = ["insightface.*"]
+ignore_missing_imports = true
