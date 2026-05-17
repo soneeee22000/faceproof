@@ -25,14 +25,17 @@ from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
 from training.celeba_spoof import load_celeba_spoof_subset
+from training.model import (
+    IMAGE_SIZE,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
+    build_antispoofing_model,
+    inference_transform,
+)
 
 _MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 _WEIGHTS_PATH = _MODELS_DIR / "antispoofing_mobilenetv2.pth"
 _CURVE_PATH = _MODELS_DIR / "antispoofing_training_curve.png"
-_IMAGE_SIZE = 224
-_NUM_CLASSES = 2
-_IMAGENET_MEAN = (0.485, 0.456, 0.406)
-_IMAGENET_STD = (0.229, 0.224, 0.225)
 
 
 class _FaceCropDataset(Dataset):
@@ -51,25 +54,18 @@ class _FaceCropDataset(Dataset):
         return self._transform(image), int(record["labels"])
 
 
-def _transforms(*, train: bool) -> Any:
-    """Build the preprocessing pipeline; training adds a horizontal flip."""
+def _train_transform() -> Any:
+    """Training transform — the eval transform plus a horizontal flip."""
     from torchvision import transforms
 
-    steps: list[Any] = [transforms.Resize((_IMAGE_SIZE, _IMAGE_SIZE))]
-    if train:
-        steps.append(transforms.RandomHorizontalFlip())
-    steps.append(transforms.ToTensor())
-    steps.append(transforms.Normalize(_IMAGENET_MEAN, _IMAGENET_STD))
-    return transforms.Compose(steps)
-
-
-def _build_model() -> nn.Module:
-    """Return an ImageNet-pretrained MobileNetV2 with a fresh 2-class head."""
-    from torchvision import models
-
-    model = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.IMAGENET1K_V1)
-    model.classifier[1] = nn.Linear(model.last_channel, _NUM_CLASSES)
-    return model
+    return transforms.Compose(
+        [
+            transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+        ]
+    )
 
 
 def _run_epoch(
@@ -141,16 +137,16 @@ def main() -> None:
 
     splits = load_celeba_spoof_subset(subset_size=args.subset_size, seed=args.seed)
     train_loader = DataLoader(
-        _FaceCropDataset(splits.train, _transforms(train=True)),
+        _FaceCropDataset(splits.train, _train_transform()),
         batch_size=args.batch_size, shuffle=True, num_workers=2,
     )
     val_loader = DataLoader(
-        _FaceCropDataset(splits.validation, _transforms(train=False)),
+        _FaceCropDataset(splits.validation, inference_transform()),
         batch_size=args.batch_size, num_workers=2,
     )
     print(f"train: {len(train_loader.dataset)}  validation: {len(val_loader.dataset)}", flush=True)
 
-    model = _build_model().to(device)
+    model = build_antispoofing_model().to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
