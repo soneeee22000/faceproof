@@ -6,7 +6,7 @@ All notable changes to FaceProof are documented here. The format follows
 
 ## [0.1.0] — Unreleased
 
-Phase 1 — face verification.
+Phases 1–2 — face verification and liveness.
 
 ### Added
 
@@ -18,6 +18,12 @@ Phase 1 — face verification.
 - LFW verification evaluation harness, plus a Colab notebook for GPU runs.
 - LFW results — ROC AUC 0.9903, EER 2.22%, 98.81% accuracy at cosine threshold 0.2528 —
   with the report, ROC curve, and raw scores committed under `evaluation/results/`.
+- Silent-Face / MiniFASNet liveness baseline — Apache-2.0 architecture vendored, weights
+  fetched by a download script.
+- CelebA-Spoof subset loader and a MobileNetV2 anti-spoofing classifier — 99.90%
+  validation accuracy, transfer-learned on Colab GPU.
+- Anti-spoofing evaluation harness — APCER / BPCER / ACER metrics (ISO/IEC 30107-3),
+  trained model benchmarked against the Silent-Face baseline.
 - Project scaffold: FastAPI application with a health probe, Dockerfile, GitHub Actions
   CI (ruff + pytest), and PRD-driven documentation.
 

@@ -6,8 +6,9 @@ computer-vision subsystem behind identity verification.**
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python 3.10](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
 ![CI](https://img.shields.io/github/actions/workflow/status/soneeee22000/faceproof/ci.yml?branch=main&label=CI)
-![Tests](https://img.shields.io/badge/tests-28%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)
 ![LFW AUC](https://img.shields.io/badge/LFW%20ROC%20AUC-0.9903-brightgreen)
+![Anti-spoofing](https://img.shields.io/badge/anti--spoofing%20val%20acc-99.90%25-brightgreen)
 ![Last commit](https://img.shields.io/github/last-commit/soneeee22000/faceproof)
 
 Identity verification rests on two computer-vision questions: _is the selfie the same
@@ -38,8 +39,9 @@ flowchart LR
 ```
 
 A stateless pipeline: detect → align → embed → match → liveness → explainable decision.
-No database — uploaded images are processed in memory and never stored. The liveness
-stage is the next build phase (see Roadmap); face verification is complete today.
+No database — uploaded images are processed in memory and never stored. Face verification
+and the liveness models are built; the FastAPI service that wires them into one endpoint
+is the next build phase (see Roadmap).
 
 ## Features
 
@@ -50,16 +52,22 @@ stage is the next build phase (see Roadmap); face verification is complete today
 - Cosine-similarity matching against a threshold **calibrated from the LFW ROC curve** —
   never a guessed constant.
 
+**Liveness / anti-spoofing (complete)**
+
+- Apache-2.0 **Silent-Face / MiniFASNet** integrated as a working baseline detector.
+- A **MobileNetV2 classifier**, transfer-learned on a 67k-image CelebA-Spoof subset —
+  **99.90% validation accuracy** — benchmarked head-to-head against that baseline.
+
 **Evaluation & rigor**
 
 - 6000-pair LFW verification protocol with a reproducible report.
-- Pure-NumPy calibration — ROC, AUC, EER, and accuracy-maximizing threshold selection,
-  fully unit-tested with no ML dependency.
+- Pure-NumPy calibration and PAD metrics (ROC/AUC/EER; APCER/BPCER/ACER), fully
+  unit-tested with no ML dependency.
 - Every metric reproducible from committed raw scores, or end-to-end via a GPU notebook.
 
 **Engineering**
 
-- Test-first development — 28 tests, `ruff` + `mypy --strict` clean on every commit.
+- Test-first development — 44 tests, `ruff` + `mypy --strict` clean on every commit.
 - Lazy model loading — the package imports without the heavy CV stack (keeps CI light).
 - Environment-driven config; CPU by default, one env var to run on GPU.
 
@@ -69,7 +77,7 @@ stage is the next build phase (see Roadmap); face verification is complete today
 | -------------------- | --------------------------------------------------- |
 | Computer vision      | InsightFace (SCRFD + ArcFace), ONNX Runtime, OpenCV |
 | Evaluation           | NumPy, scikit-learn, Matplotlib                     |
-| Training (Phase 2)   | PyTorch                                             |
+| Training             | PyTorch, torchvision, Hugging Face Datasets         |
 | Service (Phase 3)    | FastAPI, Uvicorn, Pydantic                          |
 | Frontend (Phase 3)   | React, TypeScript                                   |
 | Tooling & CI         | pytest, ruff, mypy (strict), GitHub Actions         |
@@ -100,8 +108,10 @@ uvicorn faceproof.api:app --reload   # run the API (health probe)
 
 ## Evaluation
 
-Face verification is evaluated on the **6000-pair LFW verification protocol**. The match
-threshold is calibrated from the ROC curve — not guessed.
+### Face verification — LFW
+
+Evaluated on the **6000-pair LFW verification protocol**. The match threshold is
+calibrated from the ROC curve — not guessed.
 
 | Metric                         | Value  |
 | ------------------------------ | ------ |
@@ -117,6 +127,18 @@ committed raw scores (`evaluation/results/lfw_scores.npz`) via
 `evaluation.calibration.calibrate`, or end-to-end with `python -m evaluation.run_lfw_evaluation`.
 `evaluation/colab_lfw_evaluation.ipynb` runs the full protocol on a free GPU.
 
+### Liveness / anti-spoofing — CelebA-Spoof
+
+A MobileNetV2 anti-spoofing classifier, transfer-learned on a 67k-image CelebA-Spoof
+subset over 5 epochs — **99.90% validation accuracy**, with train and validation curves
+tracking together (no overfitting).
+
+![Anti-spoofing training curve](models/antispoofing_training_curve.png)
+
+The trained model is benchmarked head-to-head against the zero-shot Silent-Face baseline
+with APCER / BPCER / ACER on the held-out test split — `evaluation/run_antispoofing_evaluation.py`
+(`evaluation/colab_antispoofing_evaluation.ipynb` runs it on a free GPU).
+
 ## Project Structure
 
 ```
@@ -125,18 +147,15 @@ faceproof/
 │   ├── detection.py      # SCRFD face detection + 5-point alignment
 │   ├── embedding.py      # ArcFace 512-d embeddings
 │   ├── matching.py       # cosine similarity + calibrated decision
-│   ├── config.py         # environment-driven settings
-│   ├── errors.py         # domain errors
-│   └── api.py            # FastAPI app (health probe; pipeline endpoints in Phase 3)
-├── evaluation/           # offline evaluation harness
-│   ├── calibration.py    # pure-NumPy ROC / AUC / EER / threshold selection
-│   ├── lfw.py            # LFW pair loading
-│   ├── run_lfw_evaluation.py
-│   ├── colab_lfw_evaluation.ipynb   # GPU evaluation notebook
-│   └── results/          # report, ROC curve, raw scores
-├── tests/                # pytest — mirrors faceproof/
+│   ├── liveness.py       # Silent-Face / MiniFASNet anti-spoofing
+│   ├── _minifasnet.py    # vendored MiniFASNet architecture (Apache-2.0)
+│   └── config.py · errors.py · api.py   # settings, domain errors, FastAPI app
+├── training/             # CelebA-Spoof loader + MobileNetV2 training (+ Colab notebook)
+├── evaluation/           # LFW + anti-spoofing harness, metrics, Colab notebooks
+│   └── results/          # reports, plots, raw scores
+├── tests/                # pytest — mirrors the packages
 ├── docs/                 # PRD.md, ARCHITECTURE.md
-├── models/ · data/       # weights & datasets — downloaded, never committed
+├── models/ · data/       # trained model committed; third-party weights & datasets downloaded
 └── Dockerfile · pyproject.toml · .github/workflows/ci.yml
 ```
 
