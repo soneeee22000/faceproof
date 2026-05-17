@@ -23,6 +23,9 @@ models/*.pt
 models/*.onnx
 models/weights/
 
+# ...except FaceProof's own trained anti-spoofing model (committed deliberately)
+!models/antispoofing_mobilenetv2.pth
+
 # Datasets — never committed (licensing: see data/README.md)
 data/lfw/
 data/celeba_spoof/
