@@ -39,9 +39,9 @@ flowchart LR
 ```
 
 A stateless pipeline: detect → align → embed → match → liveness → explainable decision.
-No database — uploaded images are processed in memory and never stored. Face verification
-and the liveness models are built; the FastAPI service that wires them into one endpoint
-is the next build phase (see Roadmap).
+No database — uploaded images are processed in memory and never stored. The pipeline,
+the FastAPI service exposing it, and a React upload/result UI are all built; deploying
+the container to Cloud Run is the last step (see Roadmap).
 
 ## Features
 
@@ -103,8 +103,24 @@ pytest -q                            # run the test suite
 ruff check .                         # lint
 mypy faceproof                       # strict type-check
 python -m evaluation.run_lfw_evaluation   # reproduce the LFW evaluation
-uvicorn faceproof.api:app --reload   # run the API (health probe)
+uvicorn faceproof.api:app --reload   # run the API on :8000
 ```
+
+## API
+
+A stateless FastAPI service. Every response uses one envelope —
+`{"data": <result>, "error": null}` on success, `{"data": null, "error": {"code", "message"}}`
+on failure.
+
+| Method | Endpoint        | Purpose                                           |
+| ------ | --------------- | ------------------------------------------------- |
+| GET    | `/api/health`   | Liveness/readiness probe                          |
+| POST   | `/api/verify`   | Verify a selfie vs. an ID portrait (match + live) |
+| POST   | `/api/match`    | Face match only                                   |
+| POST   | `/api/liveness` | Liveness / anti-spoofing only                     |
+
+The React upload/result UI lives in `frontend/` — `npm install && npm run dev` for
+development, `npm run build` for production (FastAPI then serves the built `dist/`).
 
 ## Evaluation
 
@@ -161,8 +177,11 @@ faceproof/
 │   ├── embedding.py      # ArcFace 512-d embeddings
 │   ├── matching.py       # cosine similarity + calibrated decision
 │   ├── liveness.py       # Silent-Face / MiniFASNet anti-spoofing
-│   ├── _minifasnet.py    # vendored MiniFASNet architecture (Apache-2.0)
-│   └── config.py · errors.py · api.py   # settings, domain errors, FastAPI app
+│   ├── decision.py       # combine match + liveness into a verdict
+│   ├── images.py         # upload decoding + validation
+│   ├── api.py            # FastAPI app — /api/verify, /api/match, /api/liveness
+│   └── schemas.py · config.py · errors.py · _minifasnet.py
+├── frontend/             # React + Vite + TypeScript upload/result UI
 ├── training/             # CelebA-Spoof loader + MobileNetV2 training (+ Colab notebook)
 ├── evaluation/           # LFW + anti-spoofing harness, metrics, Colab notebooks
 │   └── results/          # reports, plots, raw scores
@@ -178,8 +197,8 @@ faceproof/
 | ----- | -------------------------------------------------------------------- | -------- |
 | 1     | Face verification — detection, embedding, matching, LFW calibration  | Complete |
 | 2     | Liveness / anti-spoofing — CelebA-Spoof CNN vs. Silent-Face baseline | Complete |
-| 3     | Service & UI — FastAPI pipeline + React upload/result UI             | Next     |
-| 4     | Deploy — Docker image to GCP Cloud Run                               | Planned  |
+| 3     | Service & UI — FastAPI pipeline + React upload/result UI             | Complete |
+| 4     | Deploy — Docker image to GCP Cloud Run                               | Next     |
 
 <!-- TODO: Add demo GIF once the Phase 3 UI ships -->
 

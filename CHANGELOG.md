@@ -6,7 +6,7 @@ All notable changes to FaceProof are documented here. The format follows
 
 ## [0.1.0] — Unreleased
 
-Phases 1–2 — face verification and liveness.
+Phases 1–3 — face verification, liveness, and the service + UI.
 
 ### Added
 
@@ -24,8 +24,14 @@ Phases 1–2 — face verification and liveness.
   validation accuracy, transfer-learned on Colab GPU.
 - Anti-spoofing evaluation harness — APCER / BPCER / ACER metrics (ISO/IEC 30107-3),
   trained model benchmarked against the Silent-Face baseline.
-- Project scaffold: FastAPI application with a health probe, Dockerfile, GitHub Actions
-  CI (ruff + pytest), and PRD-driven documentation.
+- Image upload decoding and validation — EXIF orientation, RGB normalization, size
+  and type checks.
+- FastAPI verification endpoints — `/api/verify`, `/api/match`, `/api/liveness` — with a
+  uniform `{data, error}` response envelope and domain-error-to-HTTP-status mapping.
+- React + Vite + TypeScript upload/result UI in `frontend/`, served by FastAPI in
+  production so the demo ships as a single container.
+- Project scaffold: FastAPI application, Dockerfile, GitHub Actions CI (ruff + pytest),
+  and PRD-driven documentation.
 
 ### Changed
 
