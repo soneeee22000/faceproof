@@ -8,10 +8,13 @@ the CV inference is blocking CPU work, so FastAPI runs them in a threadpool.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from faceproof.config import settings
 from faceproof.decision import verify
@@ -98,3 +101,10 @@ def liveness_endpoint(selfie: UploadFile) -> ApiResponse[LivenessOut]:
     """Assess whether a selfie is a live face or a presentation attack."""
     result = detect_liveness(decode_image(selfie.file.read()))
     return ApiResponse[LivenessOut](data=LivenessOut.model_validate(result))
+
+
+# Serve the built React frontend when present, so the demo ships as one container.
+# Registered after the API routes, which therefore take precedence.
+_FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+if _FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=_FRONTEND_DIST, html=True), name="frontend")
