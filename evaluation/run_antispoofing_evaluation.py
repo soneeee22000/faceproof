@@ -127,9 +127,12 @@ def _write_report(
         f"| {baseline.acer:.4f} | {baseline.threshold:.4f} |",
         "",
         "Lower is better. APCER = spoofs accepted as live; BPCER = live faces rejected;",
-        "ACER = their mean. The trained model is fine-tuned on this dataset; the",
-        "Silent-Face baseline is zero-shot, so this measures the value of fine-tuning.",
-        "Comparison chart: `antispoofing_comparison.png`. Raw scores: `antispoofing_scores.npz`.",
+        "ACER = their mean. The trained model is fine-tuned on this dataset, so it holds a",
+        "home-field advantage; the Silent-Face baseline is zero-shot **and** receives the",
+        "pre-cropped CelebA-Spoof faces, while it is designed to crop a face from a wider",
+        "frame with surrounding context — so it runs outside its intended input conditions.",
+        "The comparison shows the value of task-specific fine-tuning, not a like-for-like",
+        "baseline benchmark. Comparison chart: `antispoofing_comparison.png`.",
         "",
     ]
     destination.write_text("\n".join(lines), encoding="utf-8")

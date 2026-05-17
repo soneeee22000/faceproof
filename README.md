@@ -135,9 +135,22 @@ tracking together (no overfitting).
 
 ![Anti-spoofing training curve](models/antispoofing_training_curve.png)
 
-The trained model is benchmarked head-to-head against the zero-shot Silent-Face baseline
-with APCER / BPCER / ACER on the held-out test split — `evaluation/run_antispoofing_evaluation.py`
-(`evaluation/colab_antispoofing_evaluation.ipynb` runs it on a free GPU).
+On the **10,020-image held-out test split**, scored with APCER / BPCER / ACER
+(ISO/IEC 30107-3) and benchmarked against the zero-shot Silent-Face baseline:
+
+| Model                  | APCER  | BPCER | ACER      |
+| ---------------------- | ------ | ----- | --------- |
+| MobileNetV2 (trained)  | 0.04%  | 0.00% | **0.02%** |
+| Silent-Face (baseline) | 96.82% | 2.39% | 49.60%    |
+
+![Anti-spoofing comparison](evaluation/results/antispoofing_comparison.png)
+
+The fine-tuned model is near-perfect on the held-out split. The Silent-Face baseline runs
+zero-shot _and_ on pre-cropped faces — it is designed to crop a face from a wider frame —
+so it operates outside its intended input conditions; the comparison shows the value of
+task-specific fine-tuning, not a like-for-like baseline benchmark. Full report:
+`evaluation/results/antispoofing_report.md`; reproducible via
+`evaluation/colab_antispoofing_evaluation.ipynb`.
 
 ## Project Structure
 
