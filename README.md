@@ -6,7 +6,7 @@ computer-vision subsystem behind identity verification.**
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python 3.10](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
 ![CI](https://img.shields.io/github/actions/workflow/status/soneeee22000/faceproof/ci.yml?branch=main&label=CI)
-![Tests](https://img.shields.io/badge/tests-44%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-62%20passing-brightgreen)
 ![LFW AUC](https://img.shields.io/badge/LFW%20ROC%20AUC-0.9903-brightgreen)
 ![Anti-spoofing](https://img.shields.io/badge/anti--spoofing%20val%20acc-99.90%25-brightgreen)
 ![Last commit](https://img.shields.io/github/last-commit/soneeee22000/faceproof)
@@ -42,8 +42,8 @@ flowchart LR
 
 A stateless pipeline: detect → align → embed → match → liveness → explainable decision.
 No database — uploaded images are processed in memory and never stored. The pipeline,
-the FastAPI service exposing it, and a React upload/result UI are all built; deploying
-the container to Cloud Run is the last step (see Roadmap).
+the FastAPI service exposing it, and a React upload/result UI ship as a single container,
+deployed live on GCP Cloud Run.
 
 ## Features
 
@@ -69,7 +69,7 @@ the container to Cloud Run is the last step (see Roadmap).
 
 **Engineering**
 
-- Test-first development — 44 tests, `ruff` + `mypy --strict` clean on every commit.
+- Test-first development — 62 tests, `ruff` + `mypy --strict` clean on every commit.
 - Lazy model loading — the package imports without the heavy CV stack (keeps CI light).
 - Environment-driven config; CPU by default, one env var to run on GPU.
 
