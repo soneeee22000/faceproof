@@ -1,0 +1,18 @@
+FaceProof
+Copyright 2026 Pyae Sone (Seon)
+
+FaceProof itself is released under the MIT License.
+
+This product includes software from the Silent-Face-Anti-Spoofing project
+(https://github.com/minivision-ai/Silent-Face-Anti-Spoofing), licensed under
+the Apache License, Version 2.0.
+
+  - faceproof/_minifasnet.py contains the MiniFASNet network architecture
+    vendored from that project. Indentation is normalized; the network is
+    otherwise unchanged.
+
+A copy of the Apache License, Version 2.0, is available at:
+https://www.apache.org/licenses/LICENSE-2.0
+
+The MiniFASNet pretrained weights are likewise Apache-2.0; they are downloaded
+by models/download_silentface.py and are never redistributed in this repository.

@@ -11,3 +11,7 @@ class FaceProofError(Exception):
 
 class NoFaceDetectedError(FaceProofError):
     """Raised when no face can be detected in an input image."""
+
+
+class LivenessModelMissingError(FaceProofError):
+    """Raised when the Silent-Face anti-spoofing weights are not available."""
