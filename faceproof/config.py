@@ -33,5 +33,10 @@ class Settings(BaseSettings):
             return 0
         return -1
 
+    @property
+    def cors_origin_list(self) -> list[str]:
+        """Allowed CORS origins, parsed from the comma-separated setting."""
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
 
 settings = Settings()
