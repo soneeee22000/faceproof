@@ -15,6 +15,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Runtime inference stack — what the deployed service needs.
+serve = [
+    "torch>=2.4,<3",
+    "torchvision>=0.19,<1",
+    "onnxruntime>=1.18,<2",
+    "insightface>=0.7.3,<1",
+    "opencv-python-headless>=4.10,<5",
+]
+# Full stack — adds the evaluation and training dependencies on top of serve.
 ml = [
     "torch>=2.4,<3",
     "torchvision>=0.19,<1",
