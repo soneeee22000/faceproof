@@ -15,3 +15,11 @@ class NoFaceDetectedError(FaceProofError):
 
 class LivenessModelMissingError(FaceProofError):
     """Raised when the Silent-Face anti-spoofing weights are not available."""
+
+
+class InvalidImageError(FaceProofError):
+    """Raised when an uploaded file is empty or not a decodable image."""
+
+
+class ImageTooLargeError(FaceProofError):
+    """Raised when an uploaded file exceeds the configured size limit."""
