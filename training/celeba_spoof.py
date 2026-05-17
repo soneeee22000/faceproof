@@ -78,6 +78,21 @@ def stratified_split(
     )
 
 
+def _drop_records_without_image(dataset: Any) -> Any:
+    """Drop the few mirror records whose stored image bytes are missing.
+
+    The check runs on the undecoded image struct, so no image is decoded here.
+    """
+    from datasets import Image
+
+    undecoded = dataset.cast_column("cropped_image", Image(decode=False))
+    kept = undecoded.filter(
+        lambda record: record["cropped_image"] is not None
+        and record["cropped_image"].get("bytes") is not None
+    )
+    return kept.cast_column("cropped_image", Image(decode=True))
+
+
 def load_celeba_spoof_subset(
     train_fraction: float = 0.7,
     val_fraction: float = 0.15,
@@ -95,7 +110,7 @@ def load_celeba_spoof_subset(
     """
     from datasets import load_dataset
 
-    dataset = load_dataset(_DATASET_ID, split="test")
+    dataset = _drop_records_without_image(load_dataset(_DATASET_ID, split="test"))
     labels = np.asarray(dataset["labels"], dtype=np.int64)
 
     if subset_size is not None and subset_size < len(labels):
