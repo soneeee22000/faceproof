@@ -23,6 +23,7 @@ ml = [
     "opencv-python-headless>=4.10,<5",
     "scikit-learn>=1.5,<2",
     "matplotlib>=3.8,<4",
+    "datasets>=2.20,<4",
 ]
 dev = [
     "pytest>=8.2,<9",
@@ -55,7 +56,7 @@ python_version = "3.10"
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["insightface.*", "torch.*", "cv2.*"]
+module = ["insightface.*", "torch.*", "cv2.*", "datasets.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

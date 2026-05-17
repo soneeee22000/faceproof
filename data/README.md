@@ -4,9 +4,10 @@ Datasets live here at evaluation/training time. They are **never committed** —
 forbid redistribution, and `.gitignore` blocks the image files.
 
 - **LFW** (Labeled Faces in the Wild) — face-verification evaluation (pairs protocol → ROC,
-  FAR/FRR). Publicly available; download via the script added in the face-verification phase.
+  FAR/FRR). Downloaded automatically by `evaluation/run_lfw_evaluation.py` via scikit-learn.
 - **CelebA-Spoof** — anti-spoofing training + evaluation. Licence: **non-commercial research
-  only, no redistribution**. Used locally to train/evaluate the liveness classifier; cited, never
-  redistributed.
+  only, no redistribution**. `training/celeba_spoof.py` loads a public, ungated Hugging Face
+  mirror (67k pre-cropped face crops, ~5 GB) via the `datasets` library — cached here, never
+  re-committed.
 
-A `download_datasets.py` script is added in the build phase that first needs the data.
+Model weights (InsightFace, Silent-Face) download similarly — see `models/`.
