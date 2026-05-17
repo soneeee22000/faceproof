@@ -1,8 +1,10 @@
-"""Shared MobileNetV2 anti-spoofing model — architecture, weights, transforms.
+"""MobileNetV2 anti-spoofing model — architecture, weights, and transforms.
 
-Used by both the training script and the evaluation harness so the network and
-its preprocessing match exactly. Torch and torchvision are imported lazily, so
-this module imports without the optional ``[ml]`` extra.
+This module lives in the deployable ``faceproof`` package because the trained
+classifier is part of the production liveness path; the training script and the
+evaluation harness also import it, so the network and its preprocessing match
+exactly everywhere. Torch and torchvision are imported lazily, so the module
+imports without the optional ``[ml]`` extra.
 """
 
 from __future__ import annotations
@@ -23,7 +25,7 @@ def build_antispoofing_model(pretrained: bool = True) -> Any:
 
     Args:
         pretrained: Load ImageNet weights into the backbone (for training).
-            Pass ``False`` for evaluation, where trained weights overwrite the
+            Pass ``False`` for inference, where trained weights overwrite the
             whole model anyway.
     """
     from torch import nn
@@ -46,7 +48,7 @@ def load_antispoofing_model(weights_path: Any, device: Any) -> Any:
 
 
 def inference_transform() -> Any:
-    """Return the eval-time preprocessing transform (resize, to-tensor, normalize)."""
+    """Return the inference preprocessing transform (resize, to-tensor, normalize)."""
     from torchvision import transforms
 
     return transforms.Compose(

@@ -61,6 +61,7 @@ def test_fuse_predicts_spoof_when_attack_class_dominates() -> None:
 def test_detect_liveness_on_sample_image() -> None:
     """The full liveness pipeline returns a well-formed result on a real photo."""
     pytest.importorskip("torch")
+    pytest.importorskip("torchvision")
     from insightface.data import get_image
 
     try:

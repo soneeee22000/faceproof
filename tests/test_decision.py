@@ -67,6 +67,7 @@ def test_verify_runs_the_full_pipeline_on_a_sample_image() -> None:
     """End-to-end verify chains matching, liveness and the decision."""
     pytest.importorskip("insightface")
     pytest.importorskip("torch")
+    pytest.importorskip("torchvision")
     from insightface.data import get_image
 
     from faceproof.errors import LivenessModelMissingError

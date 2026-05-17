@@ -24,14 +24,14 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from training.celeba_spoof import load_celeba_spoof_subset
-from training.model import (
+from faceproof._mobilenet import (
     IMAGE_SIZE,
     IMAGENET_MEAN,
     IMAGENET_STD,
     build_antispoofing_model,
     inference_transform,
 )
+from training.celeba_spoof import load_celeba_spoof_subset
 
 _MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 _WEIGHTS_PATH = _MODELS_DIR / "antispoofing_mobilenetv2.pth"

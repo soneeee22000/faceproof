@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     max_upload_bytes: int = 8 * 1024 * 1024
     face_match_threshold: float = 0.2528  # LFW-calibrated — see evaluation/results/
+    liveness_threshold: float = 0.1058  # CelebA-Spoof-calibrated — see evaluation/results/
     onnx_providers: str = "CPUExecutionProvider"
 
     @property

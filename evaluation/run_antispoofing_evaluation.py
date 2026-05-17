@@ -26,8 +26,8 @@ from evaluation.antispoofing_metrics import (
     metrics_at_threshold,
     select_threshold,
 )
+from faceproof._mobilenet import LIVE_CLASS, inference_transform, load_antispoofing_model
 from training.celeba_spoof import load_celeba_spoof_subset
-from training.model import LIVE_CLASS, inference_transform, load_antispoofing_model
 
 _WEIGHTS_PATH = Path(__file__).resolve().parents[1] / "models" / "antispoofing_mobilenetv2.pth"
 _RESULTS_DIR = Path(__file__).resolve().parent / "results"

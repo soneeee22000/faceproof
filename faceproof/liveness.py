@@ -1,16 +1,16 @@
-"""Liveness / anti-spoofing using the Silent-Face MiniFASNet models.
+"""Liveness / anti-spoofing detection.
 
-Wraps the Apache-2.0 Silent-Face anti-spoofing models (vendored architecture in
-``faceproof._minifasnet``) into a simple interface: given an image and a face
-box, decide whether the face is a live capture or a presentation attack (a
-printed photo or a screen replay).
+Given an image and a face box, decide whether the face is a live capture or a
+presentation attack (a printed photo or a screen replay).
 
-Two MiniFASNet models are run at different face-crop scales and their softmax
-outputs are fused — the standard Silent-Face inference. This is the working
-liveness component and the benchmark baseline for the trained classifier.
+``detect_liveness`` uses the **trained MobileNetV2 classifier** as the primary
+detector when its weights are present, and falls back to the Apache-2.0
+**Silent-Face** baseline (vendored architecture in ``faceproof._minifasnet``)
+otherwise. ``assess_liveness`` always runs Silent-Face — it is the fallback path
+and the benchmark baseline used by the evaluation harness.
 
-Torch and the vendored model are imported lazily, so this module imports
-without the optional ``[ml]`` extra (keeps CI light).
+Torch and the models are imported lazily, so this module imports without the
+optional ``[ml]`` extra (keeps CI light).
 """
 
 from __future__ import annotations
@@ -23,6 +23,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from faceproof.config import settings
 from faceproof.detection import detect_primary_face
 from faceproof.errors import LivenessModelMissingError
 
@@ -30,6 +31,7 @@ _INPUT_SIZE = 80
 _REAL_CLASS = 1
 _MODEL_FILES = ("2.7_80x80_MiniFASNetV2.pth", "4_0_0_80x80_MiniFASNetV1SE.pth")
 _MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
+_TRAINED_WEIGHTS = _MODELS_DIR / "antispoofing_mobilenetv2.pth"
 
 
 @dataclass(frozen=True)
@@ -101,8 +103,8 @@ def _strip_module_prefix(state_dict: dict[str, Any]) -> dict[str, Any]:
 
 
 @lru_cache(maxsize=1)
-def _models() -> list[tuple[Any, float]]:
-    """Load the MiniFASNet models once, returning ``(network, crop scale)`` pairs.
+def _silentface_models() -> list[tuple[Any, float]]:
+    """Load the Silent-Face MiniFASNet models once: ``(network, crop scale)`` pairs.
 
     Raises:
         LivenessModelMissingError: If the pretrained weights are not present.
@@ -134,8 +136,16 @@ def _models() -> list[tuple[Any, float]]:
     return loaded
 
 
+@lru_cache(maxsize=1)
+def _trained_model() -> tuple[Any, Any]:
+    """Load the trained MobileNetV2 classifier once: ``(network, transform)``."""
+    from faceproof._mobilenet import inference_transform, load_antispoofing_model
+
+    return load_antispoofing_model(_TRAINED_WEIGHTS, "cpu"), inference_transform()
+
+
 def assess_liveness(image: NDArray[np.uint8], bbox: NDArray[np.float32]) -> LivenessResult:
-    """Assess whether the face in ``bbox`` is a live capture or a spoof.
+    """Assess liveness with the Silent-Face baseline — the fallback detector.
 
     Args:
         image: BGR ``uint8`` image.
@@ -148,7 +158,7 @@ def assess_liveness(image: NDArray[np.uint8], bbox: NDArray[np.float32]) -> Live
     face_box = (left_x, top_y, right_x - left_x, bottom_y - top_y)
     image_height, image_width = image.shape[:2]
     probabilities: list[NDArray[np.float32]] = []
-    for network, scale in _models():
+    for network, scale in _silentface_models():
         left, top, right, bottom = _crop_box(image_width, image_height, face_box, scale)
         crop = cv2.resize(
             image[top : bottom + 1, left : right + 1], (_INPUT_SIZE, _INPUT_SIZE)
@@ -161,12 +171,41 @@ def assess_liveness(image: NDArray[np.uint8], bbox: NDArray[np.float32]) -> Live
     return LivenessResult(score=score, is_live=is_live, label="live" if is_live else "spoof")
 
 
+def _assess_with_trained_model(
+    image: NDArray[np.uint8], bbox: NDArray[np.float32]
+) -> LivenessResult:
+    """Assess liveness with the trained MobileNetV2 — the primary detector."""
+    import torch
+    from PIL import Image as PILImage
+
+    from faceproof._mobilenet import LIVE_CLASS
+
+    network, transform = _trained_model()
+    left, top, right, bottom = (max(int(value), 0) for value in bbox)
+    crop = image[top:bottom, left:right]
+    if crop.size == 0:
+        crop = image
+    face = PILImage.fromarray(np.ascontiguousarray(crop[:, :, ::-1]))
+    tensor = transform(face).unsqueeze(0)
+    with torch.no_grad():
+        probabilities = torch.softmax(network(tensor), dim=1)[0]
+    score = float(probabilities[LIVE_CLASS])
+    is_live = score >= settings.liveness_threshold
+    return LivenessResult(score=score, is_live=is_live, label="live" if is_live else "spoof")
+
+
 def detect_liveness(image: NDArray[np.uint8]) -> LivenessResult:
     """Detect the primary face in an image and assess its liveness.
 
+    Uses the trained MobileNetV2 classifier when its weights are present, and
+    falls back to the Silent-Face baseline otherwise.
+
     Raises:
         NoFaceDetectedError: If no face is detected.
-        LivenessModelMissingError: If the anti-spoofing weights are not present.
+        LivenessModelMissingError: If neither the trained classifier nor the
+            Silent-Face weights are available.
     """
     face = detect_primary_face(image)
+    if _TRAINED_WEIGHTS.exists():
+        return _assess_with_trained_model(image, face.bbox)
     return assess_liveness(image, face.bbox)

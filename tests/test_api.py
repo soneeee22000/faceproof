@@ -95,6 +95,7 @@ def test_verify_happy_path_returns_envelope() -> None:
     """The full verify pipeline returns a well-formed envelope."""
     pytest.importorskip("insightface")
     pytest.importorskip("torch")
+    pytest.importorskip("torchvision")
     import cv2
     from insightface.data import get_image
 
