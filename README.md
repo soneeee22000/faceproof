@@ -44,6 +44,25 @@ ruff check .                         # lint
 mypy faceproof                       # type-check
 ```
 
+## Evaluation
+
+Face verification is evaluated on the **6000-pair LFW verification protocol**. The match
+threshold is calibrated from the ROC curve — never guessed.
+
+| Metric                         | Value  |
+| ------------------------------ | ------ |
+| ROC AUC                        | 0.9903 |
+| Equal Error Rate               | 2.22%  |
+| Accuracy @ operating threshold | 98.81% |
+| Operating threshold (cosine)   | 0.2528 |
+
+![LFW verification ROC curve](evaluation/results/lfw_roc.png)
+
+Full report: `evaluation/results/lfw_report.md`. Every metric is reproducible from the committed
+raw scores (`evaluation/results/lfw_scores.npz`) via `evaluation.calibration.calibrate`, or
+end-to-end with `python -m evaluation.run_lfw_evaluation` (`evaluation/colab_lfw_evaluation.ipynb`
+runs it on a free GPU).
+
 ## Architecture
 
 See `docs/ARCHITECTURE.md`. A stateless FastAPI service runs the verification pipeline

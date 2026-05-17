@@ -133,7 +133,7 @@ def _write_report(
         f"- Pairs scored: {result.num_pairs}",
         f"- Pairs skipped (no face detected): {skipped}",
         "- Pipeline: SCRFD detection -> ArcFace `w600k_r50` -> cosine similarity",
-        f"- Runtime: {elapsed_seconds / 60:.1f} min (CPU)",
+        f"- Wall-clock runtime: {elapsed_seconds / 60:.1f} min",
         "",
         "## Metrics",
         "",
@@ -168,7 +168,7 @@ def main() -> None:
 
     print(f"Loading LFW pairs (subset={args.subset})...", flush=True)
     pairs = load_lfw_pairs(subset=args.subset)
-    print(f"Loaded {len(pairs)} pairs. Scoring on CPU...", flush=True)
+    print(f"Loaded {len(pairs)} pairs. Scoring...", flush=True)
 
     started = time.perf_counter()
     similarities, labels, skipped = _score_pairs(pairs)
