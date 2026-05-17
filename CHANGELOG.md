@@ -6,7 +6,7 @@ All notable changes to FaceProof are documented here. The format follows
 
 ## [0.1.0] — Unreleased
 
-Phases 1–3 — face verification, liveness, and the service + UI.
+Phases 1–4 — face verification, liveness, the service + UI, and deployment.
 
 ### Added
 
@@ -30,6 +30,10 @@ Phases 1–3 — face verification, liveness, and the service + UI.
   uniform `{data, error}` response envelope and domain-error-to-HTTP-status mapping.
 - React + Vite + TypeScript upload/result UI in `frontend/`, served by FastAPI in
   production so the demo ships as a single container.
+- The trained MobileNetV2 wired into the production liveness path, with the Silent-Face
+  baseline as fallback.
+- Multi-stage production Dockerfile and a Cloud Run deployment — live at
+  https://faceproof-102991984200.europe-west1.run.app.
 - Project scaffold: FastAPI application, Dockerfile, GitHub Actions CI (ruff + pytest),
   and PRD-driven documentation.
 

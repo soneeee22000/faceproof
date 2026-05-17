@@ -11,6 +11,8 @@ computer-vision subsystem behind identity verification.**
 ![Anti-spoofing](https://img.shields.io/badge/anti--spoofing%20val%20acc-99.90%25-brightgreen)
 ![Last commit](https://img.shields.io/github/last-commit/soneeee22000/faceproof)
 
+**Live demo:** https://faceproof-102991984200.europe-west1.run.app
+
 Identity verification rests on two computer-vision questions: _is the selfie the same
 person as the ID portrait?_ and _is the selfie a live face — not a printout or a screen
 replay?_ Most public reference implementations stop at one hosted-API call and a
@@ -198,7 +200,7 @@ faceproof/
 | 1     | Face verification — detection, embedding, matching, LFW calibration  | Complete |
 | 2     | Liveness / anti-spoofing — CelebA-Spoof CNN vs. Silent-Face baseline | Complete |
 | 3     | Service & UI — FastAPI pipeline + React upload/result UI             | Complete |
-| 4     | Deploy — Docker image to GCP Cloud Run                               | Next     |
+| 4     | Deploy — Docker image to GCP Cloud Run                               | Complete |
 
 <!-- TODO: Add demo GIF once the Phase 3 UI ships -->
 
@@ -218,6 +220,9 @@ gcloud run deploy faceproof \
 Cloud Build builds the multi-stage Dockerfile, pushes the image, and deploys it; the
 command prints the public `*.run.app` URL. The model weights are baked into the image,
 so the only slow step is the first request after a cold start.
+
+The live deployment runs at
+**https://faceproof-102991984200.europe-west1.run.app**.
 
 ## Licensing
 
