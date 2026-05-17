@@ -202,6 +202,23 @@ faceproof/
 
 <!-- TODO: Add demo GIF once the Phase 3 UI ships -->
 
+## Deployment
+
+The container deploys to **GCP Cloud Run** — one image serving both the API and the
+UI. From the repository root:
+
+```bash
+gcloud run deploy faceproof \
+  --source . \
+  --region europe-west1 \
+  --memory 4Gi --cpu 2 --timeout 300 \
+  --allow-unauthenticated
+```
+
+Cloud Build builds the multi-stage Dockerfile, pushes the image, and deploys it; the
+command prints the public `*.run.app` URL. The model weights are baked into the image,
+so the only slow step is the first request after a cold start.
+
 ## Licensing
 
 Project code: **MIT**. InsightFace **code** is MIT; its **pretrained weights** are
