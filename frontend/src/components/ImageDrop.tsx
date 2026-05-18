@@ -1,13 +1,17 @@
 import { useEffect, useId, useState } from "react";
 
+import { IconImage } from "./icons";
+
 interface ImageDropProps {
-  label: string;
-  file: File | null;
-  onSelect: (file: File | null) => void;
+  readonly label: string;
+  /** Short role hint shown beside the label, e.g. "reference". */
+  readonly tag: string;
+  readonly file: File | null;
+  readonly onSelect: (file: File | null) => void;
 }
 
-/** A single labelled image picker with a live preview. */
-export function ImageDrop({ label, file, onSelect }: ImageDropProps) {
+/** A labelled image picker with a live preview, styled as a capture slot. */
+export function ImageDrop({ label, tag, file, onSelect }: ImageDropProps) {
   const inputId = useId();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -22,22 +26,30 @@ export function ImageDrop({ label, file, onSelect }: ImageDropProps) {
   }, [file]);
 
   return (
-    <div className="image-drop">
-      <label htmlFor={inputId} className="image-drop__label">
+    <div className="drop">
+      <label className="drop__label" htmlFor={inputId}>
         {label}
+        <span>/ {tag}</span>
       </label>
-      {previewUrl ? (
-        <img src={previewUrl} alt={label} className="image-drop__preview" />
-      ) : (
-        <div className="image-drop__placeholder">No image selected</div>
-      )}
-      <input
-        id={inputId}
-        type="file"
-        accept="image/*"
-        className="image-drop__input"
-        onChange={(event) => onSelect(event.target.files?.[0] ?? null)}
-      />
+      <div className={`drop__zone${file ? " drop__zone--filled" : ""}`}>
+        {previewUrl ? (
+          <img src={previewUrl} alt={label} className="drop__preview" />
+        ) : (
+          <span className="drop__empty">
+            <IconImage size={28} />
+            Drop or browse
+          </span>
+        )}
+        {file && <span className="drop__swap">Replace</span>}
+        <input
+          id={inputId}
+          type="file"
+          accept="image/*"
+          className="drop__input"
+          aria-label={`Choose ${label} image`}
+          onChange={(event) => onSelect(event.target.files?.[0] ?? null)}
+        />
+      </div>
     </div>
   );
 }
