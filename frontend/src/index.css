@@ -1126,6 +1126,28 @@ a {
   color: var(--line-hi);
 }
 
+.slot__doc {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 1.2rem;
+  text-align: center;
+  background: var(--panel);
+  color: var(--accent);
+}
+
+.slot__doc-name {
+  max-width: 90%;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text);
+  word-break: break-all;
+}
+
 .cam__msg {
   margin: 0;
   max-width: 26ch;

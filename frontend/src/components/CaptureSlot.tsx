@@ -1,7 +1,13 @@
 import { useEffect, useId, useState } from "react";
 
 import { useCamera } from "../hooks/useCamera";
-import { IconCamera, IconImage, IconRefresh, IconUpload } from "./icons";
+import {
+  IconCamera,
+  IconFile,
+  IconImage,
+  IconRefresh,
+  IconUpload,
+} from "./icons";
 
 type Mode = "camera" | "upload";
 
@@ -15,6 +21,15 @@ interface CaptureSlotProps {
   readonly defaultMode: Mode;
   /** Base filename for a webcam capture, e.g. "selfie". */
   readonly captureName: string;
+  /** File-input accept list. Defaults to images only. */
+  readonly accept?: string;
+}
+
+/** True when the file is a PDF — which cannot be shown in an <img> preview. */
+function isPdf(file: File): boolean {
+  return (
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+  );
 }
 
 /**
@@ -28,14 +43,16 @@ export function CaptureSlot({
   onSelect,
   defaultMode,
   captureName,
+  accept = "image/*",
 }: CaptureSlotProps) {
   const [mode, setMode] = useState<Mode>(defaultMode);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const inputId = useId();
   const { videoRef, status, error, start, stop, capture } = useCamera();
+  const acceptsPdf = accept.includes("pdf");
 
   useEffect(() => {
-    if (!file) {
+    if (!file || isPdf(file)) {
       setPreviewUrl(null);
       return;
     }
@@ -91,9 +108,19 @@ export function CaptureSlot({
       </div>
 
       <div className="slot__stage">
-        {file && previewUrl ? (
+        {file ? (
           <>
-            <img src={previewUrl} alt={label} className="slot__media" />
+            {isPdf(file) ? (
+              <div className="slot__doc">
+                <IconFile size={32} />
+                <span className="slot__doc-name">{file.name}</span>
+                <span className="cam__msg">PDF — page 1 will be read</span>
+              </div>
+            ) : (
+              previewUrl && (
+                <img src={previewUrl} alt={label} className="slot__media" />
+              )
+            )}
             <button
               type="button"
               className="slot__retake"
@@ -159,13 +186,17 @@ export function CaptureSlot({
         ) : (
           <div className="upload">
             <IconImage size={28} />
-            <span className="cam__msg">Drop an image or browse</span>
+            <span className="cam__msg">
+              {acceptsPdf
+                ? "Drop an image or PDF, or browse"
+                : "Drop an image or browse"}
+            </span>
             <input
               id={inputId}
               type="file"
-              accept="image/*"
+              accept={accept}
               className="slot__input"
-              aria-label={`Choose ${label} image`}
+              aria-label={`Choose ${label} file`}
               onChange={(event) => onSelect(event.target.files?.[0] ?? null)}
             />
           </div>

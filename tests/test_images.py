@@ -21,6 +21,13 @@ def _png_bytes(image: Image.Image) -> bytes:
     return buffer.getvalue()
 
 
+def _pdf_bytes(image: Image.Image) -> bytes:
+    """Encode a Pillow image as a single-page PDF."""
+    buffer = io.BytesIO()
+    image.save(buffer, format="PDF")
+    return buffer.getvalue()
+
+
 def test_decodes_a_valid_png() -> None:
     """A valid PNG decodes to an (H, W, 3) uint8 array."""
     decoded = decode_image(_png_bytes(Image.new("RGB", (64, 48), (10, 20, 30))))
@@ -56,3 +63,17 @@ def test_rejects_oversized_upload() -> None:
     """An upload above the size limit is rejected before decoding."""
     with pytest.raises(ImageTooLargeError):
         decode_image(b"\x00" * (settings.max_upload_bytes + 1))
+
+
+def test_renders_pdf_first_page() -> None:
+    """A PDF upload has its first page rendered to an (H, W, 3) uint8 array."""
+    decoded = decode_image(_pdf_bytes(Image.new("RGB", (200, 140), (40, 90, 160))))
+    assert decoded.ndim == 3
+    assert decoded.shape[2] == 3
+    assert decoded.dtype == np.uint8
+
+
+def test_rejects_corrupt_pdf() -> None:
+    """Bytes with a PDF header but no valid document are rejected."""
+    with pytest.raises(InvalidImageError):
+        decode_image(b"%PDF-1.4\nthis is not a real pdf body")

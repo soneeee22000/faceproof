@@ -46,11 +46,11 @@ export function Demo() {
 
         <Reveal>
           <p className="demo__lead">
-            Add a photo of an ID document — passport, national ID or driving
-            licence — and take a live selfie with your webcam. FaceProof matches
-            the face on the document to the selfie and checks the selfie is a
-            live capture, not a photo of a photo. It matches the face; it does
-            not authenticate the document.
+            Add a photo or PDF of an ID document — passport, national ID or
+            driving licence — and take a live selfie with your webcam. FaceProof
+            matches the face on the document to the selfie and checks the selfie
+            is a live capture, not a photo of a photo. It matches the face; it
+            does not authenticate the document.
           </p>
 
           <div className="demo__panel">
@@ -67,6 +67,7 @@ export function Demo() {
                   onSelect={setIdDocument}
                   defaultMode="upload"
                   captureName="id-document"
+                  accept="image/*,application/pdf"
                 />
                 <CaptureSlot
                   label="Live selfie"

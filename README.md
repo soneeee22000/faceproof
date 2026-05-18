@@ -27,9 +27,9 @@ evaluation report behind every number.
 
 The live site is a one-page walkthrough — the problem, the six-stage pipeline, the
 benchmarks — that ends on a working tool. Capture a **live selfie from your webcam** (or
-upload one), add a photo of an ID document, and get a verdict with the match similarity
-and liveness score. It matches the face on the document to the selfie; it does not
-authenticate the document itself.
+upload one), add a photo or PDF of an ID document, and get a verdict with the match
+similarity and liveness score. It matches the face on the document to the selfie; it
+does not authenticate the document itself.
 
 <!-- TODO: Add demo GIF — genuine match → VERIFIED, and print/replay → REJECTED -->
 
@@ -85,6 +85,8 @@ as a single container, deployed on GCP Cloud Run.
   live tool; served by FastAPI as static assets, so it ships in the same container.
 - Live webcam capture on both the ID-document and selfie inputs, with file upload as a
   fallback — a liveness check only means something on a frame captured then and there.
+- ID documents accepted as image or PDF — a PDF has its first page rendered server-side
+  (`pypdfium2`) before the pipeline runs.
 - Stateless `{data, error}` JSON API; images processed in memory, never stored.
 
 **Engineering**
