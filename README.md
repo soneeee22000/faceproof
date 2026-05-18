@@ -14,21 +14,33 @@ computer-vision subsystem behind identity verification.**
 **Live demo:** https://faceproof-102991984200.europe-west1.run.app
 
 Identity verification rests on two computer-vision questions: _is the selfie the same
-person as the ID portrait?_ and _is the selfie a live face — not a printout or a screen
-replay?_ Most public reference implementations stop at one hosted-API call and a
-match/no-match label — no threshold calibration, no presentation-attack handling, no
-honest evaluation. FaceProof builds the subsystem properly: detection, alignment,
+person as the face on the ID document?_ and _is the selfie a live face — not a printout
+or a screen replay?_ Most public reference implementations stop at one hosted-API call
+and a match/no-match label — no threshold calibration, no presentation-attack handling,
+no honest evaluation. FaceProof builds the subsystem properly: detection, alignment,
 embeddings, **data-calibrated** decision thresholds, anti-spoofing, and a reproducible
 evaluation report behind every number.
 
 > Non-commercial portfolio / reference-implementation project. Product spec: `docs/PRD.md`.
 
+## Demo
+
+The live site is a one-page walkthrough — the problem, the six-stage pipeline, the
+benchmarks — that ends on a working tool. Capture a **live selfie from your webcam** (or
+upload one), add a photo of an ID document, and get a verdict with the match similarity
+and liveness score. It matches the face on the document to the selfie; it does not
+authenticate the document itself.
+
+<!-- TODO: Add demo GIF — genuine match → VERIFIED, and print/replay → REJECTED -->
+
+**Try it:** https://faceproof-102991984200.europe-west1.run.app
+
 ## Architecture
 
 ```mermaid
 flowchart LR
-    A[ID portrait] --> D1[Detect + align]
-    B[Selfie] --> D2[Detect + align]
+    A[ID document] --> D1[Detect + align]
+    B[Live selfie] --> D2[Detect + align]
     D1 --> E1[ArcFace embedding]
     D2 --> E2[ArcFace embedding]
     E1 --> M[Cosine similarity<br/>vs calibrated threshold]
@@ -41,9 +53,9 @@ flowchart LR
 ```
 
 A stateless pipeline: detect → align → embed → match → liveness → explainable decision.
-No database — uploaded images are processed in memory and never stored. The pipeline,
-the FastAPI service exposing it, and a React upload/result UI ship as a single container,
-deployed live on GCP Cloud Run.
+No database — images are processed in memory and never stored. The pipeline, the FastAPI
+service exposing it, and a React landing page with a live webcam-or-upload demo all ship
+as a single container, deployed on GCP Cloud Run.
 
 ## Features
 
@@ -67,6 +79,14 @@ deployed live on GCP Cloud Run.
   unit-tested with no ML dependency.
 - Every metric reproducible from committed raw scores, or end-to-end via a GPU notebook.
 
+**Service & demo (complete)**
+
+- A one-page landing site — the problem, the pipeline, the benchmarks — ending on the
+  live tool; served by FastAPI as static assets, so it ships in the same container.
+- Live webcam capture on both the ID-document and selfie inputs, with file upload as a
+  fallback — a liveness check only means something on a frame captured then and there.
+- Stateless `{data, error}` JSON API; images processed in memory, never stored.
+
 **Engineering**
 
 - Test-first development — 62 tests, `ruff` + `mypy --strict` clean on every commit.
@@ -75,15 +95,15 @@ deployed live on GCP Cloud Run.
 
 ## Tech Stack
 
-| Layer                | Technologies                                        |
-| -------------------- | --------------------------------------------------- |
-| Computer vision      | InsightFace (SCRFD + ArcFace), ONNX Runtime, OpenCV |
-| Evaluation           | NumPy, scikit-learn, Matplotlib                     |
-| Training             | PyTorch, torchvision, Hugging Face Datasets         |
-| Service (Phase 3)    | FastAPI, Uvicorn, Pydantic                          |
-| Frontend (Phase 3)   | React, TypeScript                                   |
-| Tooling & CI         | pytest, ruff, mypy (strict), GitHub Actions         |
-| Deployment (Phase 4) | Docker, GCP Cloud Run                               |
+| Layer           | Technologies                                        |
+| --------------- | --------------------------------------------------- |
+| Computer vision | InsightFace (SCRFD + ArcFace), ONNX Runtime, OpenCV |
+| Evaluation      | NumPy, scikit-learn, Matplotlib                     |
+| Training        | PyTorch, torchvision, Hugging Face Datasets         |
+| Service         | FastAPI, Uvicorn, Pydantic                          |
+| Frontend        | React, Vite, TypeScript                             |
+| Tooling & CI    | pytest, ruff, mypy (strict), GitHub Actions         |
+| Deployment      | Docker, GCP Cloud Run                               |
 
 ## Getting Started
 
@@ -117,12 +137,13 @@ on failure.
 | Method | Endpoint        | Purpose                                           |
 | ------ | --------------- | ------------------------------------------------- |
 | GET    | `/api/health`   | Liveness/readiness probe                          |
-| POST   | `/api/verify`   | Verify a selfie vs. an ID portrait (match + live) |
+| POST   | `/api/verify`   | Verify a selfie vs. an ID document (match + live) |
 | POST   | `/api/match`    | Face match only                                   |
 | POST   | `/api/liveness` | Liveness / anti-spoofing only                     |
 
-The React upload/result UI lives in `frontend/` — `npm install && npm run dev` for
-development, `npm run build` for production (FastAPI then serves the built `dist/`).
+The React landing page and verification UI live in `frontend/` — `npm install && npm run
+dev` for development, `npm run build` for production (FastAPI then serves the built
+`dist/`).
 
 ## Evaluation
 
@@ -183,7 +204,7 @@ faceproof/
 │   ├── images.py         # upload decoding + validation
 │   ├── api.py            # FastAPI app — /api/verify, /api/match, /api/liveness
 │   └── schemas.py · config.py · errors.py · _minifasnet.py
-├── frontend/             # React + Vite + TypeScript upload/result UI
+├── frontend/             # React + Vite landing page + live verification UI
 ├── training/             # CelebA-Spoof loader + MobileNetV2 training (+ Colab notebook)
 ├── evaluation/           # LFW + anti-spoofing harness, metrics, Colab notebooks
 │   └── results/          # reports, plots, raw scores
@@ -199,10 +220,9 @@ faceproof/
 | ----- | -------------------------------------------------------------------- | -------- |
 | 1     | Face verification — detection, embedding, matching, LFW calibration  | Complete |
 | 2     | Liveness / anti-spoofing — CelebA-Spoof CNN vs. Silent-Face baseline | Complete |
-| 3     | Service & UI — FastAPI pipeline + React upload/result UI             | Complete |
+| 3     | Service & UI — FastAPI pipeline + React landing page                 | Complete |
 | 4     | Deploy — Docker image to GCP Cloud Run                               | Complete |
-
-<!-- TODO: Add demo GIF once the Phase 3 UI ships -->
+| 5     | Document v2 — MRZ parsing and document-authenticity checks           | Planned  |
 
 ## Deployment
 
