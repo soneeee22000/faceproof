@@ -994,16 +994,21 @@ a {
   }
 }
 
-.drop {
+.slot {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
 }
 
-.drop__label {
+.slot__head {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.slot__label {
   font-family: var(--font-mono);
   font-size: 0.7rem;
   letter-spacing: 0.12em;
@@ -1011,77 +1016,179 @@ a {
   color: var(--text-dim);
 }
 
-.drop__label span {
+.slot__label span {
   color: var(--text-faint);
 }
 
-.drop__zone {
-  position: relative;
-  display: flex;
+.slot__tabs {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.slot__tab {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.62rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    background 0.18s var(--ease),
+    color 0.18s var(--ease);
+}
+
+.slot__tab + .slot__tab {
+  border-left: 1px solid var(--line);
+}
+
+.slot__tab:hover {
+  color: var(--text);
+}
+
+.slot__tab[data-active="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.slot__stage {
+  position: relative;
   aspect-ratio: 4 / 3;
-  border: 1px dashed var(--line-hi);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg);
-  cursor: pointer;
   overflow: hidden;
-  transition:
-    border-color 0.2s var(--ease),
-    background 0.2s var(--ease);
 }
 
-.drop__zone:hover {
-  border-color: var(--accent-line);
-}
-
-.drop__zone--filled {
-  border-style: solid;
-  border-color: var(--line);
-}
-
-.drop__preview {
+.slot__media {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.drop__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-
-.drop__empty svg {
-  color: var(--line-hi);
-}
-
-.drop__input {
+.slot__input {
   position: absolute;
   inset: 0;
   opacity: 0;
   cursor: pointer;
 }
 
-.drop__swap {
+.cam,
+.upload {
   position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
-  padding: 0.3rem 0.55rem;
+  inset: 0;
+}
+
+.cam__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  transform: scaleX(-1);
+}
+
+.cam__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.2rem;
+  text-align: center;
+  background: rgba(10, 11, 13, 0.84);
+}
+
+.upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  color: var(--text-faint);
+  transition: background 0.2s var(--ease);
+}
+
+.upload:hover {
+  background: var(--panel);
+}
+
+.upload svg {
+  color: var(--line-hi);
+}
+
+.cam__msg {
+  margin: 0;
+  max-width: 26ch;
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.cam__msg--error {
+  color: var(--fail);
+  text-transform: none;
+}
+
+.slot__retake,
+.cam__shutter {
+  position: absolute;
+  left: 50%;
+  bottom: 0.7rem;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.slot__retake {
   color: var(--text);
   background: rgba(10, 11, 13, 0.82);
   border: 1px solid var(--line-hi);
-  border-radius: 3px;
+  transition:
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.slot__retake:hover {
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+.cam__shutter {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: 0;
+  transition: background 0.2s var(--ease);
+}
+
+.cam__shutter:hover {
+  background: #6ef29c;
+}
+
+.cam__shutter-ring {
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--accent-ink);
+  border-radius: 50%;
 }
 
 .demo__run {

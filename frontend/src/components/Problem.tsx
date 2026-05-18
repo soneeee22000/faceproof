@@ -16,10 +16,12 @@ export function Problem() {
         <Reveal>
           <p className="problem__lead">
             Identity verification rests on two computer-vision questions:{" "}
-            <strong>is the selfie the same person as the ID portrait</strong>,
-            and <strong>is the selfie a live face</strong> — not a printout or a
-            screen replay. Most public reference implementations answer with one
-            hosted-API call and a match / no-match label. Three things are
+            <strong>
+              is the selfie the same person as the face on the ID document
+            </strong>
+            , and <strong>is the selfie a live face</strong> — not a printout or
+            a screen replay. Most public reference implementations answer with
+            one hosted-API call and a match / no-match label. Three things are
             quietly missing.
           </p>
         </Reveal>
